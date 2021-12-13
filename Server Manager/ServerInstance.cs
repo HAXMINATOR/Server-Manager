@@ -10,6 +10,7 @@ namespace Server_Manager
     {
         int id;
         List<Player> players = new();
+        string ip;
 
         public ServerInstance(int id)
         {
@@ -21,5 +22,6 @@ namespace Server_Manager
         public int ID { get => id; set => id = value; }
         public List<Player> Players { get => players; set => players = value; }
         public int PlayerCount { get => players.Count;}
+        public string Ip { get => ip; set => ip = value; }
     }
 }

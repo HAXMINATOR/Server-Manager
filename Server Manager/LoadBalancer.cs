@@ -8,9 +8,9 @@ namespace Server_Manager
 {
     public class LoadBalancer
     {
-        List<ServerInstance> instances = new();
-        int minPlayerCount = 5;
-        int maxPlayerCount = 50;
+        public readonly List<ServerInstance> instances = new();
+        public readonly int minPlayerCount = 5;
+        public readonly int maxPlayerCount = 50;
 
         /// <summary>
         /// Checks current <see cref="ServerInstance"/>s and assigns the <paramref name="player"/> to the optimal one, reporting back to <see cref="ServerManagerLoginMQ"/>
@@ -57,10 +57,30 @@ namespace Server_Manager
         }
 
         /// <summary>
+        /// Assigns a <see cref="Player"/> to a specific <see cref="ServerInstance"/> by ID
+        /// </summary>
+        /// <param name="player">The <see cref="Player"/> that should be assigned to a <see cref="ServerInstance"/></param>
+        /// <param name="instanceID">The ID of the <see cref="ServerInstance"/> that the <see cref="Player"/> should join</param>
+        public void PlayerJoin(Player player, int instanceID)
+        {
+            foreach (ServerInstance instance in instances)
+            {
+                if (instance.ID == instanceID)
+                {
+                    instance.Players.Add(player);
+
+                    //call back to the login service that player should join chosenInstance
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Instantiates a new <see cref="ServerInstance"/> and adds it to <see cref="instances"/>
         /// </summary>
         /// <returns>The newly created <see cref="ServerInstance"/></returns>
-        ServerInstance CreateNewInstance()
+        public ServerInstance CreateNewInstance()
         {
             int newInstanceID = 0;
             if (instances.Count() > 0)
@@ -77,7 +97,7 @@ namespace Server_Manager
         /// Deletes the <see cref="ServerInstance"/> with the <see cref="ServerInstance.ID"/> of <paramref name="instanceID"/>
         /// </summary>
         /// <param name="instanceID">ID of the <see cref="ServerInstance"/> that should be deleted</param>
-        void DeleteInstance(int instanceID)
+        public void DeleteInstance(int instanceID)
         {
             ServerInstance instanceToDelete = null;
 
@@ -99,7 +119,7 @@ namespace Server_Manager
         /// <summary>
         /// Checks all <see cref="ServerInstance"/>s in <see cref="instances"/>, for each of them where <see cref="ServerInstance.PlayerCount"/> is 0, call <see cref="DeleteInstance(int)"/> for each of them
         /// </summary>
-        void CheckForEmptyServers()
+        public void CheckForEmptyServers()
         {
             List<ServerInstance> instancesToBeDeleted = new();
 
