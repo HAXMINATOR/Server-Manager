@@ -8,7 +8,14 @@ namespace Server_Manager
 {
     public class Player
     {
-        string name;
-        int id;
+        static int nextID = 0;
+        public readonly string name;
+        public readonly int id;
+
+        public Player(string name)
+        {
+            this.name = name;
+            id = nextID++;
+        }
     }
 }

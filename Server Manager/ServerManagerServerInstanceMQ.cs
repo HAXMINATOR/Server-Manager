@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Newtonsoft.Json.Linq;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,13 @@ namespace Server_Manager
             {
                 byte[] body = ea.Body.ToArray();
                 string msg = Encoding.UTF8.GetString(body);
-                //do something with msg
+                JObject json = JObject.Parse(msg);
+                switch (json["function"].ToString())
+                {
+                    case "newQueue":
+                        LoadBalancer.SingletonInstance.AddInfoToNewServerInstance(json["queueName"].ToString(), json["ip"].ToString());
+                        break;
+                }
             };
 
             channel.BasicConsume(consumer, queueName, true);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,15 +9,41 @@ namespace Server_Manager
 {
     public class ServerInstance
     {
+        public string serverInstanceName;
+
+        static int nextID = 0;
         int id;
         List<Player> players = new();
         string ip;
+        ProcessStartInfo start;
 
-        public ServerInstance(int id)
+        public ServerInstance(int id = -1)
         {
-            ID = id;
+            if (id == -1)
+            {
+                id = nextID++;
+            }
+            else
+            {
+                ID = id;
+                nextID = id + 1;
+            }
+            
 
-            //code for launching the docker container goes here
+            start = new();
+            start.FileName = ""; //insert path here
+            new Thread(RunInstance).Start();
+        }
+
+        void RunInstance()
+        {
+            using (Process process = Process.Start(start))
+            {
+                process.WaitForExit();
+            }
+
+            Thread thread = new Thread(() => LoadBalancer.SingletonInstance.DeleteInstance(id));
+            thread.Start();
         }
 
         public int ID { get => id; set => id = value; }

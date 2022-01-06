@@ -1,5 +1,6 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,13 @@ namespace Server_Manager
             {
                 byte[] body = ea.Body.ToArray();
                 string msg = Encoding.UTF8.GetString(body);
-                //do something with msg
+                JObject json = JObject.Parse(msg);
+                switch (json["function"].ToString())
+                {
+                    case "join":
+                        LoadBalancer.SingletonInstance.PlayerJoin(new Player(json["username"].ToString()));
+                        break;
+                }
             };
             
             channel.BasicConsume(consumer, queueName, true);

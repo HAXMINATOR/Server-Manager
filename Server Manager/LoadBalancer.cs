@@ -8,9 +8,26 @@ namespace Server_Manager
 {
     public class LoadBalancer
     {
+        private static LoadBalancer singletonInstance;
+
         public readonly List<ServerInstance> instances = new();
         public readonly int minPlayerCount = 5;
         public readonly int maxPlayerCount = 50;
+
+        int port = 9876;
+
+        public static LoadBalancer SingletonInstance 
+        {
+            get 
+            {
+                if (singletonInstance == null)
+                {
+                    singletonInstance = new();
+                }
+                return singletonInstance;
+            } 
+        }
+
 
         /// <summary>
         /// Checks current <see cref="ServerInstance"/>s and assigns the <paramref name="player"/> to the optimal one, reporting back to <see cref="ServerManagerLoginMQ"/>
@@ -69,7 +86,8 @@ namespace Server_Manager
                 {
                     instance.Players.Add(player);
 
-                    //call back to the login service that player should join chosenInstance
+                    instance.Ip = port.ToString();
+                    port++;
 
                     return;
                 }
@@ -89,6 +107,8 @@ namespace Server_Manager
             }
             ServerInstance newInstance = new ServerInstance(newInstanceID);
             instances.Add(newInstance);
+
+            //write to server instance MQ which port to use
 
             return newInstance;
         }
@@ -137,6 +157,19 @@ namespace Server_Manager
             foreach (ServerInstance instance in instancesToBeDeleted)
             {
                 DeleteInstance(instance.ID);
+            }
+        }
+
+        public void AddInfoToNewServerInstance(string instanceName, string ip)
+        {
+            foreach (ServerInstance si in instances)
+            {
+                if (si.serverInstanceName == null || si.serverInstanceName == "")
+                {
+                    si.serverInstanceName = instanceName;
+                    si.Ip = ip + ":" + si.Ip; //si.Ip at this point should only be the port
+                    return;
+                }
             }
         }
     }
